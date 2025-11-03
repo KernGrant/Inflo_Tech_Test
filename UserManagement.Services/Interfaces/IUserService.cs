@@ -9,7 +9,6 @@ public interface IUserService
     /// Return users by active state
     /// </summary>
     /// <param name="isActive"></param>
-    /// <returns></returns>
-    IEnumerable<User> FilterByActive(bool isActive);
+    /// <returns></returns>    
     IEnumerable<User> GetAll();
 }
