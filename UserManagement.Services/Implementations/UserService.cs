@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UserManagement.Data;
 using UserManagement.Models;
 using UserManagement.Services.Domain.Interfaces;
@@ -15,4 +16,18 @@ public class UserService : IUserService
     /// </summary>    
     /// <returns></returns>
     public IEnumerable<User> GetAll() => _dataAccess.GetAll<User>();
+
+    public IEnumerable<User> GetUserById(int id)
+    {
+        var user = _dataAccess.GetAll<User>().FirstOrDefault(u => u.Id == id);
+
+        if (user != null)
+        {
+            return new List<User> { user };
+        }
+        else
+        {
+            return Enumerable.Empty<User>();
+        }
+    }
 }

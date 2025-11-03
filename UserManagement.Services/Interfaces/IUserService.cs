@@ -11,4 +11,5 @@ public interface IUserService
     /// <param name="isActive"></param>
     /// <returns></returns>    
     IEnumerable<User> GetAll();
+    IEnumerable<User> GetUserById(int id);
 }
