@@ -16,7 +16,7 @@ namespace UserManagement.WebMS.Controllers
         [HttpGet("list")]
         public IActionResult List()
         {
-            var logs = _logService.GetLogs()
+            var logs = _logService.GetAllLogs()
                                   .OrderByDescending(l => l.Timestamp)
                                   .ToList();
 
@@ -26,7 +26,7 @@ namespace UserManagement.WebMS.Controllers
         [HttpGet("details/{id:int}")]
         public IActionResult Details(int id)
         {
-            var log = _logService.GetLogs().FirstOrDefault(l => l.Id == id);
+            var log = _logService.GetAllLogs().FirstOrDefault(l => l.Id == id);
             if (log == null)
                 return NotFound();
 

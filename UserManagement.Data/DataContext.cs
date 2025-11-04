@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using UserManagement.Models;
+using UserManagement.Data.Entities;
 
 namespace UserManagement.Data;
 
@@ -12,7 +14,8 @@ public class DataContext : DbContext, IDataContext
         => options.UseInMemoryDatabase("UserManagement.Data.DataContext");
 
     protected override void OnModelCreating(ModelBuilder model)
-        => model.Entity<User>().HasData(new[]
+    {
+        model.Entity<User>().HasData(new[]
         {
             new User { Id = 1, Forename = "Peter", Surname = "Loew", Email = "ploew@example.com", IsActive = true },
             new User { Id = 2, Forename = "Benjamin Franklin", Surname = "Gates", Email = "bfgates@example.com", IsActive = true },
@@ -27,7 +30,16 @@ public class DataContext : DbContext, IDataContext
             new User { Id = 11, Forename = "Robin", Surname = "Feld", Email = "rfeld@example.com", IsActive = true },
         });
 
-    public DbSet<User>? Users { get; set; }
+        model.Entity<UserActionLog>().HasData(new[]
+        {
+        new UserActionLog { Id = 1, UserId = 1, Action = "Created user", Timestamp = DateTime.Now.AddDays(-5) },
+        new UserActionLog { Id = 2, UserId = 1, Action = "Updated email", Timestamp = DateTime.Now.AddDays(-2) },
+        new UserActionLog { Id = 3, UserId = 2, Action = "Deactivated account", Timestamp = DateTime.Now.AddDays(-1) },
+        new UserActionLog { Id = 4, UserId = 3, Action = "Viewed profile", Timestamp = DateTime.Now },
+    });
+    }
+
+public DbSet<User>? Users { get; set; }
 
     public IQueryable<TEntity> GetAll<TEntity>() where TEntity : class
         => base.Set<TEntity>();

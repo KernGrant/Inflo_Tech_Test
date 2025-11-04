@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
-using UserManagement.Services.Models.Logging;
+using UserManagement.Data.Entities;
 
 namespace UserManagement.Services.Interfaces
 {
     public interface ILogService
     {
-        void AddLog(UserActionLog log);
-        IEnumerable<UserActionLog> GetLogs();
-        IEnumerable<UserActionLog> GetLogsForUser(int userId);
+        IEnumerable<UserActionLog> GetAllLogs();
+        IEnumerable<UserActionLog> GetLogsForSpecificUser(int userId);
+        UserActionLog? GetLogById(int logId);
+        void AddLog(UserActionLog log);               
     }
 
 }

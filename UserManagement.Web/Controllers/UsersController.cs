@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
+using UserManagement.Data.Entities;
 using UserManagement.Models;
 using UserManagement.Services.Domain.Interfaces;
 using UserManagement.Services.Interfaces;
-using UserManagement.Services.Models.Logging;
 using UserManagement.Web.Models.Users;
 
 namespace UserManagement.WebMS.Controllers;
@@ -70,7 +70,7 @@ public class UsersController : Controller
             IsActive = user.IsActive
         };
 
-        var userLogs = _logService.GetLogsForUser(userDetails.Id);
+        var userLogs = _logService.GetLogsForSpecificUser(userDetails.Id);
         ViewData["UserLogs"] = userLogs;
 
 

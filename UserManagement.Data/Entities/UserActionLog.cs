@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace UserManagement.Services.Models.Logging;    
+namespace UserManagement.Data.Entities;
 
 public class UserActionLog
 {
-    public int Id { get; set; }         //Log entry
+    public int Id { get; set; }         //Log entry Id
     public int UserId { get; set; }     //User affected
     public string Action { get; set; } = string.Empty; //Action performed
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
