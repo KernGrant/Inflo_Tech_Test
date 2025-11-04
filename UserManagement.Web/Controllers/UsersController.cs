@@ -2,6 +2,8 @@
 using System.Linq;
 using UserManagement.Models;
 using UserManagement.Services.Domain.Interfaces;
+using UserManagement.Services.Interfaces;
+using UserManagement.Services.Models.Logging;
 using UserManagement.Web.Models.Users;
 
 namespace UserManagement.WebMS.Controllers;
@@ -10,7 +12,14 @@ namespace UserManagement.WebMS.Controllers;
 public class UsersController : Controller
 {
     private readonly IUserService _userService;
-    public UsersController(IUserService userService) => _userService = userService;
+    private readonly ILogService _logService;
+
+    public UsersController(IUserService userService, ILogService logService)
+    {
+        _userService = userService;
+        _logService = logService;
+    }
+
 
     [HttpGet("list")]
     public ViewResult List(bool? isActive = null)
@@ -53,13 +62,17 @@ public class UsersController : Controller
         //Map to viewmodel
         var userDetails = new UserDetailsViewModel
         {
-            Id = (int)user.Id,
+            Id = user.Id,
             Forename = user.Forename,
             Surname = user.Surname,
             Email = user.Email,
             DateOfBirth = user.DateOfBirth,
             IsActive = user.IsActive
         };
+
+        var userLogs = _logService.GetLogsForUser(userDetails.Id);
+        ViewData["UserLogs"] = userLogs;
+
 
         return View(userDetails);
     }
@@ -91,6 +104,12 @@ public class UsersController : Controller
         };
         
         _userService.AddUser(newUser);
+
+        _logService.AddLog(new UserActionLog { UserId = newUser.Id,
+            Action = "Create",
+            Timestamp = new DateTime(),
+            Details = $"User {newUser.Forename} {newUser.Surname} was created." });
+
 
         // Redirect back to the list
         return RedirectToAction("List");
@@ -142,6 +161,13 @@ public class UsersController : Controller
         
         _userService.UpdateUser(user);
 
+        _logService.AddLog(new UserActionLog
+        {
+            UserId = user.Id,
+            Action = "Updated",
+            Details = $"User {user.Forename} updated. Email: {user.Email}, DOB: {user.DateOfBirth:d}, Active: {user.IsActive}"
+        });
+
         return RedirectToAction("List");
     }
 
@@ -178,8 +204,17 @@ public class UsersController : Controller
 
         _userService.DeleteUser(user);
 
+        _logService.AddLog(new UserActionLog
+        {
+            UserId = user.Id,
+            Action = "Deleted",
+            Details = $"User {user.Forename} {user.Surname} was deleted."
+        });
+
         return RedirectToAction("List");
     }
+
+
 
 
 }

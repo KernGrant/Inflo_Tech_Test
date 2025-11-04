@@ -4,7 +4,7 @@ namespace UserManagement.Web.Models.Users;
 
 public class UserDetailsViewModel
 {
-    public long Id { get; set; }
+    public int Id { get; set; }
     public string? Forename { get; set; }
     public string? Surname { get; set; }
     public string? Email { get; set; }
