@@ -12,4 +12,5 @@ public interface IUserService
     /// <returns></returns>    
     IEnumerable<User> GetAll();
     IEnumerable<User> GetUserById(int id);
+    void AddUser (User user);
 }

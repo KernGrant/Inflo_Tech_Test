@@ -30,4 +30,9 @@ public class UserService : IUserService
             return Enumerable.Empty<User>();
         }
     }
+
+    public void AddUser(User user)
+    {
+        _dataAccess.Create(user);
+    }
 }

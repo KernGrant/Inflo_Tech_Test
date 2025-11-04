@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using UserManagement.Models;
 using UserManagement.Services.Domain.Interfaces;
 using UserManagement.Web.Models.Users;
 
@@ -61,6 +62,38 @@ public class UsersController : Controller
         };
 
         return View(userDetails);
+    }
+
+    [HttpGet]
+    public IActionResult Create()
+    {
+        var model = new UserCreateViewModel();
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Create(UserCreateViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+
+        var newUser = new User
+        {
+            Forename = model.Forename,
+            Surname = model.Surname,
+            Email = model.Email,
+            IsActive = model.IsActive,
+            DateOfBirth = model.DateOfBirth ?? DateOnly.MinValue
+        };
+        
+        _userService.AddUser(newUser);
+
+        // Redirect back to the list
+        return RedirectToAction("List");
     }
 
 }

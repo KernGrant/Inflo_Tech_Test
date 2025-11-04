@@ -9,5 +9,10 @@ public class UserDetailsViewModel
     public string? Surname { get; set; }
     public string? Email { get; set; }
     public DateOnly? DateOfBirth { get; set; }
+    public string DisplayDateOfBirth =>
+        !DateOfBirth.HasValue || DateOfBirth.Value == DateOnly.MinValue
+            ? "Not provided"
+            : DateOfBirth.Value.ToString("dd/MM/yyyy");
+
     public bool IsActive { get; set; }
 }
