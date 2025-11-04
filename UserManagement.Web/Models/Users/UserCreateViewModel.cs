@@ -5,6 +5,8 @@ namespace UserManagement.Web.Models.Users
 {
     public class UserCreateViewModel
     {
+        public long Id { get; set; }
+
         [Required, StringLength(50)]
         public string Forename { get; set; } = string.Empty;
 

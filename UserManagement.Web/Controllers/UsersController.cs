@@ -96,4 +96,90 @@ public class UsersController : Controller
         return RedirectToAction("List");
     }
 
+    [HttpGet("edit/{id:int}")]
+    public IActionResult Edit(int? id)
+    {
+        if (!id.HasValue)
+            return BadRequest("No user ID provided.");
+
+        var user = _userService.GetUserById(id.Value).FirstOrDefault();
+
+        if (user == null)
+            return NotFound();
+
+        // Map domain model to ViewModel
+        var model = new UserCreateViewModel
+        {
+            Id = user.Id,
+            Forename = user.Forename,
+            Surname = user.Surname,
+            Email = user.Email,
+            DateOfBirth = user.DateOfBirth,
+            IsActive = user.IsActive
+        };
+
+        return View(model);
+    }
+
+    [HttpPost("edit/{id:int}")]
+    [ValidateAntiForgeryToken]
+    public IActionResult Edit(int id, UserCreateViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var user = _userService.GetUserById(id).FirstOrDefault();
+        if (user == null)
+            return NotFound();
+
+        // Update domain model
+        user.Id = model.Id;
+        user.Forename = model.Forename;
+        user.Surname = model.Surname;
+        user.Email = model.Email;
+        user.DateOfBirth = model.DateOfBirth;
+        user.IsActive = model.IsActive;
+        
+        _userService.UpdateUser(user);
+
+        return RedirectToAction("List");
+    }
+
+    [HttpGet("delete/{id:int}")]
+    public IActionResult Delete(int? id)
+    {
+        if (!id.HasValue)
+            return BadRequest("A user ID must be provided.");
+
+        var user = _userService.GetUserById(id.Value).FirstOrDefault();
+        if (user == null)
+            return NotFound();
+
+        var model = new UserDetailsViewModel
+        {
+            Id = user.Id,
+            Forename = user.Forename,
+            Surname = user.Surname,
+            Email = user.Email,
+            DateOfBirth = user.DateOfBirth,
+            IsActive = user.IsActive
+        };
+
+        return View(model); // confirm deletion
+    }
+    
+    [HttpPost("delete/{id:int}")]
+    [ValidateAntiForgeryToken]
+    public IActionResult DeleteConfirmed(int id)
+    {
+        var user = _userService.GetUserById(id).FirstOrDefault();
+        if (user == null)
+            return NotFound();
+
+        _userService.DeleteUser(user);
+
+        return RedirectToAction("List");
+    }
+
+
 }
