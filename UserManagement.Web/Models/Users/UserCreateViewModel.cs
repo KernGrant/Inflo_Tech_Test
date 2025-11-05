@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using UserManagement.Services.Validation;
 
 namespace UserManagement.Web.Models.Users
 {
@@ -16,8 +17,9 @@ namespace UserManagement.Web.Models.Users
         [Required, EmailAddress]
         public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Date of Birth is required.")]
         [Display(Name = "Date of Birth")]
+        [Required(ErrorMessage = "Date of Birth is required.")]
+        [DateOfBirth(13, 110)]        
         public DateOnly? DateOfBirth { get; set; }
 
         [Display(Name = "Account Active")]

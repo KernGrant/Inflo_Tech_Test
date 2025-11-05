@@ -119,7 +119,8 @@ public class UserControllerTests
             Forename = "John",
             Surname = "Doe",
             Email = "john@example.com",
-            IsActive = true
+            IsActive = true,
+            DateOfBirth = new DateOnly(2000, 01, 01)
         };
 
         _userService.Setup(s => s.GetUserById(1)).Returns(new[] { user });

@@ -116,18 +116,14 @@ public class UsersController : Controller
     }
 
     [HttpGet("edit/{id:int}")]
-    public IActionResult Edit(int? id)
+    public IActionResult Edit(int id)
     {
-        if (!id.HasValue)
-            return BadRequest("No user ID provided.");
-
-        var user = _userService.GetUserById(id.Value).FirstOrDefault();
+        var user = _userService.GetUserById(id).FirstOrDefault();
 
         if (user == null)
             return NotFound();
 
-        // Map domain model to ViewModel
-        var model = new UserCreateViewModel
+        var model = new UserEditViewModel
         {
             Id = user.Id,
             Forename = user.Forename,
@@ -148,11 +144,11 @@ public class UsersController : Controller
             return View(model);
 
         var user = _userService.GetUserById(id).FirstOrDefault();
+
         if (user == null)
             return NotFound();
 
-        // Update domain model
-        user.Id = model.Id;
+
         user.Forename = model.Forename;
         user.Surname = model.Surname;
         user.Email = model.Email;
