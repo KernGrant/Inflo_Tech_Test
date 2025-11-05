@@ -107,7 +107,7 @@ public class UsersController : Controller
 
         _logService.AddLog(new UserActionLog { UserId = newUser.Id,
             Action = "Create",
-            Timestamp = new DateTime(),
+            Timestamp = DateTime.UtcNow, //Utc for consistency across timezones
             Details = $"User {newUser.Forename} {newUser.Surname} was created." });
 
 
@@ -161,7 +161,8 @@ public class UsersController : Controller
         {
             UserId = user.Id,
             Action = "Updated",
-            Details = $"User {user.Forename} updated. Email: {user.Email}, DOB: {user.DateOfBirth:d}, Active: {user.IsActive}"
+            Details = $"User {user.Forename} updated. Email: {user.Email}, DOB: {user.DateOfBirth:d}, Active: {user.IsActive}",
+            Timestamp = DateTime.UtcNow
         });
 
         return RedirectToAction("List");
@@ -204,7 +205,8 @@ public class UsersController : Controller
         {
             UserId = user.Id,
             Action = "Deleted",
-            Details = $"User {user.Forename} {user.Surname} was deleted."
+            Details = $"User {user.Forename} {user.Surname} was deleted.",
+            Timestamp = DateTime.UtcNow,
         });
 
         return RedirectToAction("List");
