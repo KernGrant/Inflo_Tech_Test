@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 using UserManagement.Data.Entities;
+using System.Threading.Tasks;
 
 namespace UserManagement.Services.Interfaces
 {
     public interface ILogService
     {
-        IEnumerable<UserActionLog> GetAllLogs();
-        IEnumerable<UserActionLog> GetLogsForSpecificUser(int userId);
+        Task<IEnumerable<UserActionLog>> GetAllLogsAsync();
+        Task<IEnumerable<UserActionLog>> GetLogsForSpecificUserAsync(int userId);
         UserActionLog? GetLogById(int logId);
-        void AddLog(UserActionLog log);               
+        Task AddLogAsync(UserActionLog log);               
     }
 
 }

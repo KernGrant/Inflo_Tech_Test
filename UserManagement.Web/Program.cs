@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using UserManagement.Data;
 using UserManagement.Services.Implementations;
 using UserManagement.Services.Interfaces;
 using Westwind.AspNetCore.Markdown;
@@ -12,6 +14,10 @@ builder.Services
     .AddDomainServices()
     .AddMarkdown()
     .AddControllersWithViews();
+
+builder.Services.AddDbContext<DataContext>(options =>
+    options.UseInMemoryDatabase("UserManagement"));
+builder.Services.AddScoped<IDataContext, DataContext>();
 
 builder.Services.AddSingleton<ILogService, LogService>();
 

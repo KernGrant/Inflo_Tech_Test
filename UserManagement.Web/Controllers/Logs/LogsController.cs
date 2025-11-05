@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using UserManagement.Services.Interfaces;
 
 namespace UserManagement.WebMS.Controllers
@@ -17,10 +18,9 @@ namespace UserManagement.WebMS.Controllers
         
         [HttpGet("")]
         [HttpGet("list")]
-        public IActionResult List(int page = 1, int? userId = null)
+        public async Task<IActionResult> List(int page = 1, int? userId = null)
         {
-            var logsQuery = _logService.GetAllLogs()
-                                        .AsQueryable();
+            var logsQuery = await _logService.GetAllLogsAsync();
 
 
             if (userId.HasValue)
@@ -48,8 +48,9 @@ namespace UserManagement.WebMS.Controllers
         [HttpGet("details/{id:int}")]
         public IActionResult Details(int id, int page = 1, int? userId = null)
         {
-            var log = _logService.GetAllLogs()                                    
-                                    .FirstOrDefault(l => l.Id == id);
+            var logs = _logService.GetAllLogsAsync();                                                                        
+
+            var log= logs.Result.FirstOrDefault(l => l.Id == id); 
 
             if (log == null)
             {

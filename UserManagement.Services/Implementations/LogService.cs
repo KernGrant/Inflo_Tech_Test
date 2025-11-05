@@ -3,6 +3,7 @@ using System.Linq;
 using UserManagement.Services.Interfaces;
 using UserManagement.Data.Entities;
 using System;
+using System.Threading.Tasks;
 
 namespace UserManagement.Services.Implementations
 {
@@ -25,7 +26,7 @@ namespace UserManagement.Services.Implementations
                 });
             }
 
-            AddLog(new UserActionLog
+            AddLogAsync(new UserActionLog
             {
                 UserId = 1,
                 Action = "Create",
@@ -33,7 +34,7 @@ namespace UserManagement.Services.Implementations
                 Details = "User John Doe was created."
             });
 
-            AddLog(new UserActionLog
+            AddLogAsync(new UserActionLog
             {
                 UserId = 2,
                 Action = "Update",
@@ -41,7 +42,7 @@ namespace UserManagement.Services.Implementations
                 Details = "Updated email for Jane Smith."
             });
 
-            AddLog(new UserActionLog
+            AddLogAsync(new UserActionLog
             {
                 UserId = 1,
                 Action = "Delete",
@@ -50,14 +51,14 @@ namespace UserManagement.Services.Implementations
             });
         }
 
-        public IEnumerable<UserActionLog> GetAllLogs()
+        public Task<IEnumerable<UserActionLog>> GetAllLogsAsync()
         {
-            return _logs.OrderByDescending(l => l.Timestamp);
+            return Task.FromResult(_logs.OrderByDescending(l => l.Timestamp).AsEnumerable());            
         }
 
-        public IEnumerable<UserActionLog> GetLogsForSpecificUser(int userId)
+        public Task<IEnumerable<UserActionLog>> GetLogsForSpecificUserAsync(int userId)
         {
-            return _logs.Where(l => l.UserId == userId).OrderByDescending(l => l.Timestamp);
+            return Task.FromResult(_logs.Where(l => l.UserId == userId).OrderByDescending(l => l.Timestamp).AsEnumerable());            
         }
 
         public UserActionLog? GetLogById(int logId)
@@ -65,10 +66,11 @@ namespace UserManagement.Services.Implementations
             return _logs.FirstOrDefault(l => l.Id == logId);
         }
 
-        public void AddLog(UserActionLog log)
+        public Task AddLogAsync(UserActionLog log)
         {
-            log.Id = _logs.Any() ? _logs.Max(l => l.Id) + 1 : 1;            
+            log.Id = _logs.Any() ? _logs.Max(l => l.Id) + 1 : 1;  //If no logs exist, start IDs at 1, otherwise add to the max existing ID          
             _logs.Add(log);
+            return Task.CompletedTask;
         }
     } 
 }

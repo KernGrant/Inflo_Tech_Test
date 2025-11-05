@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using UserManagement.Models;
 using UserManagement.Services.Domain.Interfaces;
@@ -11,14 +12,14 @@ namespace UserManagement.Data.Tests;
 public class UserControllerTests
 {
     [Fact]
-    public void List_WhenServiceReturnsUsers_ModelMustContainUsers()
+    public async Task List_WhenServiceReturnsUsers_ModelMustContainUsers()
     {
         // Arrange: Initializes objects and sets the value of the data that is passed to the method under test.
         var controller = CreateController();
         var users = SetupUsers();
 
         // Act: Invokes the method under test with the arranged parameters.
-        var result = controller.List();
+        var result = await controller.List();
 
         // Assert: Verifies that the action of the method under test behaves as expected.
         result.Model
@@ -40,8 +41,8 @@ public class UserControllerTests
         };
 
         _userService
-            .Setup(s => s.GetAll())
-            .Returns(users);
+            .Setup(s => s.GetAllAsync())
+            .ReturnsAsync(users);
 
         return users;
     }
@@ -85,7 +86,7 @@ public class UserControllerTests
         result.Should().BeOfType<RedirectToActionResult>()
             .Which.ActionName.Should().Be("List");
 
-        _userService.Verify(s => s.AddUser(It.Is<User>(u =>
+        _userService.Verify(s => s.AddUserAsync(It.Is<User>(u =>
             u.Forename == model.Forename &&
             u.Surname == model.Surname &&
             u.Email == model.Email
@@ -110,7 +111,7 @@ public class UserControllerTests
     }
 
     [Fact]
-    public void Edit_Get_ValidId_ReturnsViewWithModel()
+    public async Task Edit_Get_ValidId_ReturnsViewWithModel()
     {
         // Arrange
         var user = new User
@@ -123,11 +124,11 @@ public class UserControllerTests
             DateOfBirth = new DateOnly(2000, 01, 01)
         };
 
-        _userService.Setup(s => s.GetUserById(1)).Returns(new[] { user });
+        _userService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(user);
         var controller = CreateController();
 
         // Act
-        var result = controller.Edit(1);
+        var result = await controller.Edit(1);
 
         // Assert
         result.Should().BeOfType<ViewResult>()
@@ -135,7 +136,7 @@ public class UserControllerTests
     }
 
     [Fact]
-    public void Edit_Post_ValidModel_CallsUpdateAndRedirects()
+    public async Task Edit_Post_ValidModel_CallsUpdateAndRedirects()
     {
         // Arrange
         var user = new User { Id = 1,
@@ -145,7 +146,7 @@ public class UserControllerTests
                                 DateOfBirth = new DateOnly(2001, 01, 01)
         };
 
-        _userService.Setup(s => s.GetUserById(1)).Returns(new[] { user });
+        _userService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(user);
         var controller = CreateController();
 
         var model = new UserCreateViewModel
@@ -159,10 +160,10 @@ public class UserControllerTests
         };
 
         // Act
-        var result = controller.Edit(1, model);
+        var result = await controller.Edit(1, model);
 
         // Assert
-        _userService.Verify(s => s.UpdateUser(It.Is<User>(u =>
+        _userService.Verify(s => s.UpdateUserAsync(It.Is<User>(u =>
             u.Forename == "Updated" &&
             u.Surname == "User" &&
             u.Email == "updated@example.com" &&
@@ -175,7 +176,7 @@ public class UserControllerTests
     }
 
     [Fact]
-    public void Delete_Get_ValidId_ReturnsViewWithModel()
+    public async Task Delete_Get_ValidId_ReturnsViewWithModel()
     {
         // Arrange
         var user = new User
@@ -187,11 +188,11 @@ public class UserControllerTests
             DateOfBirth = new DateOnly(2001, 01, 01)
         };
 
-        _userService.Setup(s => s.GetUserById(1)).Returns(new[] { user });
+        _userService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(user);
         var controller = CreateController();
 
         // Act
-        var result = controller.Delete(1);
+        var result = await controller.Delete(1);
 
         // Assert
         result.Should().BeOfType<ViewResult>()
@@ -199,7 +200,7 @@ public class UserControllerTests
     }
 
     [Fact]
-    public void DeleteConfirmed_ValidId_CallsDeleteAndRedirects()
+    public async Task DeleteConfirmed_ValidId_CallsDeleteAndRedirects()
     {
         // Arrange
         var user = new User
@@ -211,14 +212,14 @@ public class UserControllerTests
             DateOfBirth = new DateOnly(2001, 01, 01)
         };
 
-        _userService.Setup(s => s.GetUserById(1)).Returns(new[] { user });
+        _userService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(user);
         var controller = CreateController();
 
         // Act
-        var result = controller.DeleteConfirmed(1);
+        var result = await controller.DeleteConfirmed(1);
 
         // Assert
-        _userService.Verify(s => s.DeleteUser(user), Times.Once);
+        _userService.Verify(s => s.DeleteUserAsync(user), Times.Once);
         result.Should().BeOfType<RedirectToActionResult>()
             .Which.ActionName.Should().Be("List");
     }

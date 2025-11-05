@@ -1,20 +1,27 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using UserManagement.Models;
 using UserManagement.Data.Entities;
+using UserManagement.Models;
 
 namespace UserManagement.Data;
 
 public class DataContext : DbContext, IDataContext
 {
-    public DataContext() => Database.EnsureCreated();
+    public DataContext(DbContextOptions<DataContext> options)
+        : base(options)
+    {
+        Database.EnsureCreated(); // ensures in-memory DB is created
+    }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseInMemoryDatabase("UserManagement.Data.DataContext");
+    // EF DbSets
+    public DbSet<User> Users { get; set; }
+    public DbSet<UserActionLog> UserActionLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder model)
     {
+        // Seed Users
         model.Entity<User>().HasData(new[]
         {
             new User { Id = 1, Forename = "Peter", Surname = "Loew", Email = "ploew@example.com", IsActive = true, DateOfBirth = new DateOnly(1980, 3, 12) },
@@ -27,38 +34,40 @@ public class DataContext : DbContext, IDataContext
             new User { Id = 8, Forename = "Edward", Surname = "Malus", Email = "emalus@example.com", IsActive = false, DateOfBirth = new DateOnly(1985, 6, 7) },
             new User { Id = 9, Forename = "Damon", Surname = "Macready", Email = "dmacready@example.com", IsActive = false, DateOfBirth = new DateOnly(1990, 4, 2) },
             new User { Id = 10, Forename = "Johnny", Surname = "Blaze", Email = "jblaze@example.com", IsActive = true, DateOfBirth = new DateOnly(1983, 9, 30) },
-            new User { Id = 11, Forename = "Robin", Surname = "Feld", Email = "rfeld@example.com", IsActive = true, DateOfBirth = new DateOnly(1978, 2, 11) },
+            new User { Id = 11, Forename = "Robin", Surname = "Feld", Email = "rfeld@example.com", IsActive = true, DateOfBirth = new DateOnly(1978, 2, 11) }
         });
 
+        // Seed Logs
         model.Entity<UserActionLog>().HasData(new[]
         {
-        new UserActionLog { Id = 1, UserId = 1, Action = "Created user", Timestamp = DateTime.Now.AddDays(-5) },
-        new UserActionLog { Id = 2, UserId = 1, Action = "Updated email", Timestamp = DateTime.Now.AddDays(-2) },
-        new UserActionLog { Id = 3, UserId = 2, Action = "Deactivated account", Timestamp = DateTime.Now.AddDays(-1) },
-        new UserActionLog { Id = 4, UserId = 3, Action = "Viewed profile", Timestamp = DateTime.Now },
-    });
+            new UserActionLog { Id = 1, UserId = 1, Action = "Created user", Timestamp = DateTime.Now.AddDays(-5) },
+            new UserActionLog { Id = 2, UserId = 1, Action = "Updated email", Timestamp = DateTime.Now.AddDays(-2) },
+            new UserActionLog { Id = 3, UserId = 2, Action = "Deactivated account", Timestamp = DateTime.Now.AddDays(-1) },
+            new UserActionLog { Id = 4, UserId = 3, Action = "Viewed profile", Timestamp = DateTime.Now },
+        });
     }
 
-public DbSet<User>? Users { get; set; }
-
-    public IQueryable<TEntity> GetAll<TEntity>() where TEntity : class
-        => base.Set<TEntity>();
-
-    public void Create<TEntity>(TEntity entity) where TEntity : class
+    // Generic CRUD methods
+    public async Task<List<TEntity>> GetAllAsync<TEntity>() where TEntity : class
     {
-        base.Add(entity);
-        SaveChanges();
+        return await Set<TEntity>().ToListAsync();
     }
 
-    public new void Update<TEntity>(TEntity entity) where TEntity : class
+    public async Task CreateAsync<TEntity>(TEntity entity) where TEntity : class
     {
-        base.Update(entity);
-        SaveChanges();
+        await Set<TEntity>().AddAsync(entity);
+        await SaveChangesAsync();
     }
 
-    public void Delete<TEntity>(TEntity entity) where TEntity : class
+    public async Task UpdateAsync<TEntity>(TEntity entity) where TEntity : class
     {
-        base.Remove(entity);
-        SaveChanges();
+        Set<TEntity>().Update(entity);
+        await SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync<TEntity>(TEntity entity) where TEntity : class
+    {
+        Set<TEntity>().Remove(entity);
+        await SaveChangesAsync();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UserManagement.Data;
 using UserManagement.Models;
 using UserManagement.Services.Domain.Interfaces;
@@ -9,40 +10,32 @@ namespace UserManagement.Services.Domain.Implementations;
 public class UserService : IUserService
 {
     private readonly IDataContext _dataAccess;
-    public UserService(IDataContext dataAccess) => _dataAccess = dataAccess;
 
-    /// <summary>
-    /// Return all users
-    /// </summary>    
-    /// <returns></returns>
-    public IEnumerable<User> GetAll() => _dataAccess.GetAll<User>();
+    public UserService(IDataContext dataContext) => _dataAccess = dataContext;
 
-    public IEnumerable<User> GetUserById(int id)
+    public async Task<IEnumerable<User>> GetAllAsync()
     {
-        var user = _dataAccess.GetAll<User>().FirstOrDefault(u => u.Id == id);
-
-        if (user != null)
-        {
-            return new List<User> { user };
-        }
-        else
-        {
-            return Enumerable.Empty<User>();
-        }
+        return await _dataAccess.GetAllAsync<User>();
     }
 
-    public void AddUser(User user)
+    public async Task<User?> GetUserByIdAsync(int id)
     {
-        _dataAccess.Create(user);
+        var users = await _dataAccess.GetAllAsync<User>();
+        return users.FirstOrDefault(u => u.Id == id);
     }
 
-    public void UpdateUser(User user)
+    public async Task AddUserAsync(User user)
     {
-        _dataAccess.Update(user);
+        await _dataAccess.CreateAsync(user);
     }
 
-    public void DeleteUser(User user)
+    public async Task UpdateUserAsync(User user)
     {
-        _dataAccess.Delete(user);
+        await _dataAccess.UpdateAsync(user);
+    }
+
+    public async Task DeleteUserAsync(User user)
+    {
+        await _dataAccess.DeleteAsync(user);
     }
 }

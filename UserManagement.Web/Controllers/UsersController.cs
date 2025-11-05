@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using UserManagement.Data.Entities;
 using UserManagement.Models;
 using UserManagement.Services.Domain.Interfaces;
@@ -22,18 +23,20 @@ public class UsersController : Controller
 
 
     [HttpGet("list")]
-    public ViewResult List(bool? isActive = null)
+    public async Task<ViewResult> List(bool? isActive = null)
     {
-        var items = _userService.GetAll()
+        var allUsers = await _userService.GetAllAsync();
+
+        var items = allUsers
             .Where(p => !isActive.HasValue || p.IsActive == isActive)
             .Select(p => new UserListItemViewModel
-        {
-            Id = p.Id,
-            Forename = p.Forename,
-            Surname = p.Surname,
-            Email = p.Email,
-            IsActive = p.IsActive
-        });
+            {
+                Id = p.Id,
+                Forename = p.Forename,
+                Surname = p.Surname,
+                Email = p.Email,
+                IsActive = p.IsActive
+            });
 
         var model = new UserListViewModel
         {
@@ -44,7 +47,7 @@ public class UsersController : Controller
     }
 
     [HttpGet("view/{id:int}")]
-    public IActionResult View(int? id = null)
+    public async Task<IActionResult> View(int? id = null)
     {        
         if(!id.HasValue)
         {
@@ -52,7 +55,7 @@ public class UsersController : Controller
         }
 
         // Retrieve the user based on the id
-        var user = _userService.GetUserById((int)id).FirstOrDefault();
+        var user = await _userService.GetUserByIdAsync((int)id);
         
         if (user == null)
         {
@@ -70,7 +73,7 @@ public class UsersController : Controller
             IsActive = user.IsActive
         };
 
-        var userLogs = _logService.GetLogsForSpecificUser(userDetails.Id);
+        var userLogs = await _logService.GetLogsForSpecificUserAsync(userDetails.Id);
         ViewData["UserLogs"] = userLogs;
 
 
@@ -86,7 +89,7 @@ public class UsersController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Create(UserCreateViewModel model)
+    public async Task<IActionResult> Create(UserCreateViewModel model)
     {
         if (!ModelState.IsValid)
         {
@@ -103,9 +106,9 @@ public class UsersController : Controller
             DateOfBirth = model.DateOfBirth ?? DateOnly.MinValue
         };
         
-        _userService.AddUser(newUser);
+        await _userService.AddUserAsync(newUser);
 
-        _logService.AddLog(new UserActionLog { UserId = newUser.Id,
+        await _logService.AddLogAsync(new UserActionLog { UserId = newUser.Id,
             Action = "Create",
             Timestamp = DateTime.UtcNow, //Utc for consistency across timezones
             Details = $"User {newUser.Forename} {newUser.Surname} was created." });
@@ -116,9 +119,9 @@ public class UsersController : Controller
     }
 
     [HttpGet("edit/{id:int}")]
-    public IActionResult Edit(int id)
+    public async Task<IActionResult> Edit(int id)
     {
-        var user = _userService.GetUserById(id).FirstOrDefault();
+        var user = await _userService.GetUserByIdAsync(id);
 
         if (user == null)
             return NotFound();
@@ -138,12 +141,12 @@ public class UsersController : Controller
 
     [HttpPost("edit/{id:int}")]
     [ValidateAntiForgeryToken]
-    public IActionResult Edit(int id, UserCreateViewModel model)
+    public async Task<IActionResult> Edit(int id, UserCreateViewModel model)
     {
         if (!ModelState.IsValid)
             return View(model);
 
-        var user = _userService.GetUserById(id).FirstOrDefault();
+        var user = await _userService.GetUserByIdAsync(id);
 
         if (user == null)
             return NotFound();
@@ -155,9 +158,9 @@ public class UsersController : Controller
         user.DateOfBirth = model.DateOfBirth;
         user.IsActive = model.IsActive;
         
-        _userService.UpdateUser(user);
+        await _userService.UpdateUserAsync(user);
 
-        _logService.AddLog(new UserActionLog
+        await _logService.AddLogAsync(new UserActionLog
         {
             UserId = user.Id,
             Action = "Updated",
@@ -169,12 +172,12 @@ public class UsersController : Controller
     }
 
     [HttpGet("delete/{id:int}")]
-    public IActionResult Delete(int? id)
+    public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
             return BadRequest("A user ID must be provided.");
 
-        var user = _userService.GetUserById(id.Value).FirstOrDefault();
+        var user = await _userService.GetUserByIdAsync(id.Value);
         if (user == null)
             return NotFound();
 
@@ -193,15 +196,15 @@ public class UsersController : Controller
     
     [HttpPost("delete/{id:int}")]
     [ValidateAntiForgeryToken]
-    public IActionResult DeleteConfirmed(int id)
+    public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var user = _userService.GetUserById(id).FirstOrDefault();
+        var user = await _userService.GetUserByIdAsync(id);
         if (user == null)
             return NotFound();
 
-        _userService.DeleteUser(user);
+        await _userService.DeleteUserAsync(user);
 
-        _logService.AddLog(new UserActionLog
+        await _logService.AddLogAsync(new UserActionLog
         {
             UserId = user.Id,
             Action = "Deleted",
@@ -211,8 +214,4 @@ public class UsersController : Controller
 
         return RedirectToAction("List");
     }
-
-
-
-
 }
