@@ -1,13 +1,30 @@
 ﻿@model UserManagement.Data.Entities.UserActionLog
 
+@{
+    ViewData["Title"] = "Log Details";
+}
+
 <h2>Log Details</h2>
 
-<div class="card p-3">
-    <p><strong>Log ID:</strong> @Model.Id</p>
-    <p><strong>User ID:</strong> @Model.UserId</p>
-    <p><strong>Action:</strong> @Model.Action</p>
-    <p><strong>Timestamp:</strong> @Model.Timestamp</p>
-    <p><strong>Details:</strong> @Model.Details</p>
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Id</dt>
+            <dd class="col-sm-9">@Model.Id</dd>
+
+            <dt class="col-sm-3">User Id</dt>
+            <dd class="col-sm-9">@Model.UserId</dd>
+
+            <dt class="col-sm-3">Action</dt>
+            <dd class="col-sm-9">@Model.Action</dd>
+
+            <dt class="col-sm-3">Timestamp (UTC)</dt>
+            <dd class="col-sm-9">@Model.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+
+            <dt class="col-sm-3">Details</dt>
+            <dd class="col-sm-9">@Model.Details</dd>
+        </dl>
+    </div>
 </div>
 
 <a asp-controller="Logs" asp-action="List" class="btn btn-secondary mt-3">Back to Logs</a>

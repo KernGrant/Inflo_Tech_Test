@@ -12,19 +12,52 @@ namespace UserManagement.Services.Implementations
 
         public LogService()
         {
-            _logs.AddRange(new[]
+            // Seed some initial logs
+            for (int i = 1; i <= 50; i++)
             {
-                new UserActionLog { Id = 1, UserId = 1, Action = "Created user", Timestamp = DateTime.Now.AddMinutes(-30) },
-                new UserActionLog { Id = 2, UserId = 2, Action = "Edited profile", Timestamp = DateTime.Now.AddMinutes(-10) },
-                new UserActionLog { Id = 3, UserId = 1, Action = "Deleted account", Timestamp = DateTime.Now }
+                _logs.Add(new UserActionLog
+                {
+                    Id = i,
+                    UserId = (i % 10) + 1, // assign to users 1–10
+                    Action = i % 2 == 0 ? "Create" : "Update",
+                    Timestamp = DateTime.UtcNow.AddMinutes(-i),
+                    Details = $"Example log entry {i} for user {(i % 10) + 1}."
+                });
+            }
+
+            AddLog(new UserActionLog
+            {
+                UserId = 1,
+                Action = "Create",
+                Timestamp = DateTime.UtcNow.AddDays(-5),
+                Details = "User John Doe was created."
+            });
+
+            AddLog(new UserActionLog
+            {
+                UserId = 2,
+                Action = "Update",
+                Timestamp = DateTime.UtcNow.AddDays(-2),
+                Details = "Updated email for Jane Smith."
+            });
+
+            AddLog(new UserActionLog
+            {
+                UserId = 1,
+                Action = "Delete",
+                Timestamp = DateTime.UtcNow.AddDays(-1),
+                Details = null //Null check example - will show generic message "No additional information..."
             });
         }
 
-        public IEnumerable<UserActionLog> GetAllLogs() => _logs;
+        public IEnumerable<UserActionLog> GetAllLogs()
+        {
+            return _logs.OrderByDescending(l => l.Timestamp);
+        }
 
         public IEnumerable<UserActionLog> GetLogsForSpecificUser(int userId)
         {
-            return _logs.Where(l => l.UserId == userId);
+            return _logs.Where(l => l.UserId == userId).OrderByDescending(l => l.Timestamp);
         }
 
         public UserActionLog? GetLogById(int logId)
@@ -34,7 +67,7 @@ namespace UserManagement.Services.Implementations
 
         public void AddLog(UserActionLog log)
         {
-            log.Id = _logs.Count + 1;
+            log.Id = _logs.Any() ? _logs.Max(l => l.Id) + 1 : 1;            
             _logs.Add(log);
         }
     } 

@@ -51,9 +51,16 @@
             @foreach (var log in userLogs)
             {
                 <tr>
+                    <td>@log.Id</td>
                     <td>@log.Timestamp</td>
                     <td>@log.Action</td>
-                    <td>@log.Details</td>
+                    <td>
+                        @(string.IsNullOrEmpty(log.Details)
+                            ? "No additional information."
+                            : (log.Details.Length > 50
+                            ? log.Details.Substring(0, 50) + "…"
+                            : log.Details))
+                    </td>
                 </tr>
             }
         </tbody>
@@ -61,5 +68,5 @@
 }
 else
 {
-    <p>No actions have been performed on this user yet.</p>
+    <p>No logs available for this user yet.</p>
 }

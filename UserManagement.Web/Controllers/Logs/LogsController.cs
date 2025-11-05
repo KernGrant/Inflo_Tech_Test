@@ -13,7 +13,8 @@ namespace UserManagement.WebMS.Controllers
             _logService = logService;
         }
         
-        [HttpGet("list")]
+        [HttpGet("")]
+        [HttpGet("log")]
         public IActionResult List()
         {
             var logs = _logService.GetAllLogs()
@@ -27,8 +28,12 @@ namespace UserManagement.WebMS.Controllers
         public IActionResult Details(int id)
         {
             var log = _logService.GetAllLogs().FirstOrDefault(l => l.Id == id);
+
             if (log == null)
+            {
                 return NotFound();
+            }
+                
 
             return View(log);
         }
