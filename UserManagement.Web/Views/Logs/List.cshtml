@@ -37,7 +37,15 @@
                 <td>@log.Timestamp.ToString("g")</td> @* general date/time short *@
                 <td>@(log.Details?.Length > 50 ? log.Details.Substring(0, 50) + "…" : log.Details ?? "No additional information to show.")</td>
                 <td>
-                    <a asp-controller="Logs" asp-action="Details" asp-route-id="@log.Id" class="btn btn-sm btn-outline-primary">View</a>
+                    <a
+                        asp-controller="Logs"
+                        asp-action="Details"
+                        asp-route-id="@log.Id"
+                        asp-route-page="@currentPage"
+                        asp-route-userId="@(filteredUserId)"
+                        class="btn btn-sm btn-outline-primary">
+                        View
+                    </a>
                 </td>
             </tr>
         }

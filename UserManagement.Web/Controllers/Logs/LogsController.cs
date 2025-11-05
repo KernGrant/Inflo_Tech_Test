@@ -46,14 +46,18 @@ namespace UserManagement.WebMS.Controllers
         }
 
         [HttpGet("details/{id:int}")]
-        public IActionResult Details(int id)
+        public IActionResult Details(int id, int page = 1, int? userId = null)
         {
-            var log = _logService.GetAllLogs().FirstOrDefault(l => l.Id == id);
+            var log = _logService.GetAllLogs()                                    
+                                    .FirstOrDefault(l => l.Id == id);
 
             if (log == null)
             {
                 return NotFound();
-            }                
+            }
+
+            ViewData["CurrentPage"] = page;
+            ViewData["FilteredUserId"] = userId;
 
             return View(log);
         }
