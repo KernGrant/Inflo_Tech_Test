@@ -60,6 +60,14 @@ public class UsersController : Controller
         
         if (user == null)
         {
+            // Check if this user ID ever existed in logs (e.g. deleted user)
+            var legacyLogs = await _logService.GetLogsForSpecificUserAsync(id.Value);
+            if (legacyLogs.Any())
+            {
+                ViewData["UserLogs"] = legacyLogs;
+                ViewData["DeletedUserId"] = id.Value;
+                return View("DeletedUserSummary");
+            }
             return NotFound();
         }
 
