@@ -25,4 +25,5 @@ public interface IDataContext
     /// Delete an item
     /// </summary>
     Task DeleteAsync<TEntity>(TEntity entity) where TEntity : class;
+    Task DeleteAllAsync<TEntity>(IEnumerable<TEntity> entity) where TEntity : class;
 }

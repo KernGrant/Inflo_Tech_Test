@@ -70,4 +70,12 @@ public class DataContext : DbContext, IDataContext
         Set<TEntity>().Remove(entity);
         await SaveChangesAsync();
     }
+
+
+    //Helper method to delete all entities before initializing logs
+    public async Task DeleteAllAsync<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
+    {
+        Set<TEntity>().RemoveRange(entities);
+        await SaveChangesAsync();
+    }
 }

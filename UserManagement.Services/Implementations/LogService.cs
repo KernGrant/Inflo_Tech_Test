@@ -43,54 +43,72 @@ public class LogService : ILogService
     {
         var existingLogs = await _dataContext.GetAllAsync<UserActionLog>();
 
-        // Only seed if none of the first example logs exist
-        if (!existingLogs.Any(l => l.Action == "Create" || l.Action == "Update"))
-        {
-            var logsToSeed = new List<UserActionLog>();
 
-            // 50 example logs
-            for (int i = 0; i < 50; i++)
+        // Clear existing logs
+        if (existingLogs.Any())
+        {           
+            await _dataContext.DeleteAllAsync(existingLogs);
+        }
+
+        var logs = new List<UserActionLog>();
+        var random = new Random();
+
+        // --- Seed 10 users with logical action sequences ---
+        for (int userId = 1; userId <= 10; userId++)
+        {
+            // One "Create" per user (earliest)
+            logs.Add(new UserActionLog
             {
-                logsToSeed.Add(new UserActionLog
+                UserId = userId,
+                Action = "Create",
+                Timestamp = DateTime.UtcNow.AddDays(-random.Next(30, 60)),
+                Details = $"User {userId} account created."
+            });
+
+            // Then random follow-up actions (Update/Delete)
+            var actionCount = random.Next(3, 6);
+            for (int i = 0; i < actionCount; i++)
+            {
+                var action = random.NextDouble() > 0.8 ? "Delete" : "Update";
+                logs.Add(new UserActionLog
                 {
-                    UserId = (i % 10) + 1,
-                    Action = i % 2 == 0 ? "Create" : "Update",
-                    Timestamp = DateTime.UtcNow.AddMinutes(-i),
-                    Details = $"Example log entry {i + 1} for user {(i % 10) + 1}."
+                    UserId = userId,
+                    Action = action,
+                    Timestamp = DateTime.UtcNow.AddDays(-random.Next(0, 30)),
+                    Details = $"User {userId} {action.ToLower()}d profile details."
                 });
             }
-
-            // 3 specific logs
-            logsToSeed.AddRange(new[]
-            {
+        }
+        
+        logs.AddRange(new[]
+        {
             new UserActionLog
             {
                 UserId = 1,
                 Action = "Create",
-                Timestamp = DateTime.UtcNow.AddDays(-5),
-                Details = "User John Doe was created."
+                Timestamp = DateTime.UtcNow.AddDays(-1),
+                Details = "New user 'Alice Johnson' created."
             },
             new UserActionLog
             {
                 UserId = 2,
                 Action = "Update",
-                Timestamp = DateTime.UtcNow.AddDays(-2),
-                Details = "Updated email for Jane Smith. This entry is over 50 characters... But you'll see the whole message when you click into it!" //Demonstrates longer details cutoff
+                Timestamp = DateTime.UtcNow.AddHours(-6),
+                Details = "Updated email for Jane Smith. This entry is over 50 characters... " +
+                                        "But you'll see the whole message when you click into it!" //Demonstrates longer details cutoff
             },
             new UserActionLog
             {
-                UserId = 1,
+                UserId = 3,
                 Action = "Delete",
-                Timestamp = DateTime.UtcNow.AddDays(-1),
+                Timestamp = DateTime.UtcNow.AddHours(-2),
                 Details = null                              //Demonstrates null details generic message 
             }
         });
+        
+        var totalLogs = logs.OrderByDescending(l => l.Timestamp).Take(50).ToList();
 
-            foreach (var log in logsToSeed)
-            {
-                await _dataContext.CreateAsync(log);
-            }
-        }
+        foreach (var log in totalLogs)
+            await _dataContext.CreateAsync(log);
     }
-
 }

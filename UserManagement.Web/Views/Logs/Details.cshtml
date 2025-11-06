@@ -29,11 +29,21 @@
     </div>
 </div>
 
-<a
-    asp-controller="Logs"
-    asp-action="List"
-    asp-route-page="@currentPage"
-    asp-route-userId="@(filteredUserId)"
-    class="btn btn-secondary mt-3">
-    Back to Logs
-</a>
+
+<div class="d-flex justify-content-between mt-3">
+    <a asp-controller="Logs"
+       asp-action="List"
+       asp-route-page="@currentPage"
+       asp-route-userId="@(filteredUserId)"
+       class="btn btn-secondary mt-3">
+        Back to Logs
+    </a>
+
+    @if (Model.UserId != 0)
+    {
+        <a asp-controller="Users" asp-action="View" asp-route-id="@Model.UserId" class="btn btn-primary mt-3" style="align-content:center">
+            View User Details
+        </a>
+    }
+</div>
+
