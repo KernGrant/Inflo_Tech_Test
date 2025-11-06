@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using UserManagement.Data.Entities;
 using UserManagement.Models;
 using UserManagement.Services.Domain.Interfaces;
 using UserManagement.Services.Interfaces;
@@ -11,64 +13,70 @@ namespace UserManagement.Data.Tests;
 
 public class UserControllerTests
 {
+    private readonly Mock<IUserService> _userService = new();
+    private readonly Mock<ILogService> _logService = new();
+
+    private UsersController CreateController() => new(_userService.Object, _logService.Object);
+
+    #region Helpers
+
+    private User DefaultUser(int id = 1,
+                             string forename = "John",
+                             string surname = "Smith",
+                             string email = "jsmith@test.com",
+                             bool isActive = true,
+                             DateOnly? dob = null)
+        => new()
+        {
+            Id = id,
+            Forename = forename,
+            Surname = surname,
+            Email = email,
+            IsActive = isActive,
+            DateOfBirth = dob ?? new DateOnly(2000, 01, 01)
+        };
+
+    private void SetupUserService(IEnumerable<User>? users = null)
+    {
+        users ??= new List<User> { DefaultUser() };
+        _userService.Setup(s => s.GetAllUsersAsync()).ReturnsAsync(users);
+        foreach (var user in users)
+        {
+            _userService.Setup(s => s.GetUserByIdAsync(user.Id)).ReturnsAsync(user);
+        }
+    }
+
+    #endregion
+
     [Fact]
     public async Task List_WhenServiceReturnsUsers_ModelMustContainUsers()
     {
-        // Arrange: Initializes objects and sets the value of the data that is passed to the method under test.
+        var users = new[] { DefaultUser() };
+        SetupUserService(users);
         var controller = CreateController();
-        var users = SetupUsers();
 
-        // Act: Invokes the method under test with the arranged parameters.
         var result = await controller.List();
 
-        // Assert: Verifies that the action of the method under test behaves as expected.
-        result.Model
-            .Should().BeOfType<UserListViewModel>()
+        result.Should().BeOfType<ViewResult>()
+            .Which.Model.Should().BeOfType<UserListViewModel>()
             .Which.Items.Should().BeEquivalentTo(users);
     }
 
-    private User[] SetupUsers(string forename = "Johnny", string surname = "User", string email = "juser@example.com", bool isActive = true)
-    {
-        var users = new[]
-        {
-            new User
-            {
-                Forename = forename,
-                Surname = surname,
-                Email = email,
-                IsActive = isActive
-            }
-        };
-
-        _userService
-            .Setup(s => s.GetAllAsync())
-            .ReturnsAsync(users);
-
-        return users;
-    }
-
-    private readonly Mock<IUserService> _userService = new();
-    private readonly Mock<ILogService> _logService = new();
-    private UsersController CreateController() => new(_userService.Object, _logService.Object);
-
+    #region Create Tests
     [Fact]
     public void Create_Get_ReturnsViewWithModel()
     {
-        // Arrange
         var controller = CreateController();
 
-        // Act
         var result = controller.Create();
 
-        // Assert
         result.Should().BeOfType<ViewResult>()
             .Which.Model.Should().BeOfType<UserCreateViewModel>();
     }
 
     [Fact]
-    public void Create_Post_ValidModel_RedirectsToList()
+    public async Task Create_Post_ValidModel_RedirectsToList_AndLogsAction()
     {
-        // Arrange
         var controller = CreateController();
         var model = new UserCreateViewModel
         {
@@ -79,10 +87,11 @@ public class UserControllerTests
             DateOfBirth = new DateOnly(1990, 1, 1)
         };
 
-        // Act
-        var result = controller.Create(model);
+        _userService.Setup(s => s.AddUserAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
+        _logService.Setup(s => s.AddLogAsync(It.IsAny<UserActionLog>())).Returns(Task.CompletedTask);
 
-        // Assert
+        var result = await controller.Create(model);
+
         result.Should().BeOfType<RedirectToActionResult>()
             .Which.ActionName.Should().Be("List");
 
@@ -91,67 +100,63 @@ public class UserControllerTests
             u.Surname == model.Surname &&
             u.Email == model.Email
         )), Times.Once);
+
+        _logService.Verify(s => s.AddLogAsync(It.Is<UserActionLog>(l =>
+            l.Action == "Create"
+        )), Times.Once);
     }
 
     [Fact]
-    public void Create_Post_InvalidModel_ReturnsViewWithModel()
+    public async Task Create_Post_InvalidModel_ReturnsViewWithModel()
     {
-        // Arrange
         var controller = CreateController();
         controller.ModelState.AddModelError("Forename", "Required");
-
         var model = new UserCreateViewModel();
 
-        // Act
-        var result = controller.Create(model);
+        var result = await controller.Create(model);
 
-        // Assert
         result.Should().BeOfType<ViewResult>()
             .Which.Model.Should().Be(model);
     }
+    #endregion
 
+    #region Edit Tests
     [Fact]
     public async Task Edit_Get_ValidId_ReturnsViewWithModel()
     {
-        // Arrange
-        var user = new User
-        {
-            Id = 1,
-            Forename = "John",
-            Surname = "Doe",
-            Email = "john@example.com",
-            IsActive = true,
-            DateOfBirth = new DateOnly(2000, 01, 01)
-        };
-
-        _userService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(user);
+        var user = DefaultUser();
+        SetupUserService(new[] { user });
         var controller = CreateController();
 
-        // Act
-        var result = await controller.Edit(1);
+        var result = await controller.Edit(user.Id);
 
-        // Assert
         result.Should().BeOfType<ViewResult>()
-            .Which.Model.As<UserCreateViewModel>().Forename.Should().Be("John");
+            .Which.Model.As<UserCreateViewModel>().Forename.Should().Be(user.Forename);
     }
 
     [Fact]
-    public async Task Edit_Post_ValidModel_CallsUpdateAndRedirects()
+    public async Task Edit_Get_InvalidId_ReturnsNotFound()
     {
-        // Arrange
-        var user = new User { Id = 1,
-                                Forename = "John",
-                                Surname = "Smith",
-                                Email = "jsmith@testing.com",
-                                DateOfBirth = new DateOnly(2001, 01, 01)
-        };
+        _userService.Setup(s => s.GetUserByIdAsync(999)).ReturnsAsync((User?)null);
+        var controller = CreateController();
 
-        _userService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(user);
+        var result = await controller.Edit(999);
+
+        result.Should().BeOfType<NotFoundResult>();
+    }
+
+    [Fact]
+    public async Task Edit_Post_ValidModel_CallsUpdateAndRedirects_AndLogsAction()
+    {
+        var user = DefaultUser();
+        SetupUserService(new[] { user });
+        _userService.Setup(s => s.UpdateUserAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
+        _logService.Setup(s => s.AddLogAsync(It.IsAny<UserActionLog>())).Returns(Task.CompletedTask);
         var controller = CreateController();
 
         var model = new UserCreateViewModel
         {
-            Id = 1,
+            Id = user.Id,
             Forename = "Updated",
             Surname = "User",
             Email = "updated@example.com",
@@ -159,70 +164,70 @@ public class UserControllerTests
             IsActive = true
         };
 
-        // Act
-        var result = await controller.Edit(1, model);
+        var result = await controller.Edit(user.Id, model);
 
-        // Assert
         _userService.Verify(s => s.UpdateUserAsync(It.Is<User>(u =>
-            u.Forename == "Updated" &&
-            u.Surname == "User" &&
-            u.Email == "updated@example.com" &&
-            u.DateOfBirth == new DateOnly(2002, 02, 02) &&
-            u.IsActive == true
+            u.Forename == model.Forename &&
+            u.Surname == model.Surname &&
+            u.Email == model.Email &&
+            u.DateOfBirth == model.DateOfBirth &&
+            u.IsActive == model.IsActive
+        )), Times.Once);
+
+        _logService.Verify(s => s.AddLogAsync(It.Is<UserActionLog>(l =>
+            l.Action == "Updated" &&
+            l.UserId == user.Id
         )), Times.Once);
 
         result.Should().BeOfType<RedirectToActionResult>()
             .Which.ActionName.Should().Be("List");
     }
+    #endregion
 
+    #region Delete Tests
     [Fact]
     public async Task Delete_Get_ValidId_ReturnsViewWithModel()
     {
-        // Arrange
-        var user = new User
-        {
-            Id = 1,
-            Forename = "John",
-            Surname = "Smith",
-            Email = "jsmith@testing.com",
-            DateOfBirth = new DateOnly(2001, 01, 01)
-        };
-
-        _userService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(user);
+        var user = DefaultUser();
+        SetupUserService(new[] { user });
         var controller = CreateController();
 
-        // Act
-        var result = await controller.Delete(1);
+        var result = await controller.Delete(user.Id);
 
-        // Assert
         result.Should().BeOfType<ViewResult>()
-            .Which.Model.As<UserDetailsViewModel>().Forename.Should().Be("John");
+            .Which.Model.As<UserDetailsViewModel>().Forename.Should().Be(user.Forename);
     }
 
     [Fact]
-    public async Task DeleteConfirmed_ValidId_CallsDeleteAndRedirects()
+    public async Task Delete_Get_InvalidId_ReturnsNotFound()
     {
-        // Arrange
-        var user = new User
-        {
-            Id = 1,
-            Forename = "John",
-            Surname = "Smith",
-            Email = "jsmith@testing.com",
-            DateOfBirth = new DateOnly(2001, 01, 01)
-        };
-
-        _userService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(user);
+        _userService.Setup(s => s.GetUserByIdAsync(999)).ReturnsAsync((User?)null);
         var controller = CreateController();
 
-        // Act
-        var result = await controller.DeleteConfirmed(1);
+        var result = await controller.Delete(999);
 
-        // Assert
+        result.Should().BeOfType<NotFoundResult>();
+    }
+
+    [Fact]
+    public async Task DeleteConfirmed_ValidId_CallsDeleteAndRedirects_AndLogsAction()
+    {
+        var user = DefaultUser();
+        SetupUserService(new[] { user });
+        _userService.Setup(s => s.DeleteUserAsync(user)).Returns(Task.CompletedTask);
+        _logService.Setup(s => s.AddLogAsync(It.IsAny<UserActionLog>())).Returns(Task.CompletedTask);
+        var controller = CreateController();
+
+        var result = await controller.DeleteConfirmed(user.Id);
+
         _userService.Verify(s => s.DeleteUserAsync(user), Times.Once);
+        _logService.Verify(s => s.AddLogAsync(It.Is<UserActionLog>(l =>
+            l.Action == "Deleted" &&
+            l.UserId == user.Id
+        )), Times.Once);
+
         result.Should().BeOfType<RedirectToActionResult>()
             .Which.ActionName.Should().Be("List");
     }
-
-
+    #endregion
 }
