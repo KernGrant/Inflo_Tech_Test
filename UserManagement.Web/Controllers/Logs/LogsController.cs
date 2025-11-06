@@ -16,7 +16,7 @@ namespace UserManagement.Web.Controllers.Logs
             _logService = logService;
         }
         
-        [HttpGet("")]
+        [HttpGet]
         [HttpGet("list")]
         public async Task<IActionResult> List(int page = 1, int? userId = null)
         {

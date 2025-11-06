@@ -21,7 +21,7 @@ public class UsersController : Controller
         _logService = logService;
     }
 
-
+    [HttpGet]
     [HttpGet("list")]
     public async Task<ViewResult> List(bool? isActive = null)
     {
@@ -81,7 +81,7 @@ public class UsersController : Controller
         return View(userDetails);
     }
 
-    [HttpGet]
+    [HttpGet("create")]
     public IActionResult Create()
     {
         var model = new UserCreateViewModel();
