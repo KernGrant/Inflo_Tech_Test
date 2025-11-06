@@ -75,7 +75,7 @@ public class LogService : ILogService
                 UserId = 2,
                 Action = "Update",
                 Timestamp = DateTime.UtcNow.AddDays(-2),
-                Details = "Updated email for Jane Smith. This entry is over 50 characters..." //Demonstrates longer details cutoff
+                Details = "Updated email for Jane Smith. This entry is over 50 characters... But you'll see the whole message when you click into it!" //Demonstrates longer details cutoff
             },
             new UserActionLog
             {
