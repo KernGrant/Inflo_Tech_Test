@@ -55,7 +55,7 @@ public class LogServiceTests
         var result = await _logService.GetAllLogsAsync();
 
         result.Should().HaveCount(2)
-            .And.BeEquivalentTo(logs);
+              .And.BeEquivalentTo(logs);
     }
 
     [Fact]
@@ -106,4 +106,51 @@ public class LogServiceTests
         result.Should().OnlyContain(l => l.UserId == 1)
               .And.HaveCount(2);
     }
+
+    #region InitializeAsync Tests
+
+    [Fact]
+    public async Task InitializeAsync_WhenNoLogsExist_ShouldSeedLogs()
+    {
+        // Arrange
+        _dataContextMock.Setup(d => d.GetAllAsync<UserActionLog>())
+                        .ReturnsAsync(new List<UserActionLog>());
+
+        var createdLogs = new List<UserActionLog>();
+        _dataContextMock.Setup(d => d.CreateAsync(It.IsAny<UserActionLog>()))
+                        .Callback<UserActionLog>(log => createdLogs.Add(log))
+                        .Returns(Task.CompletedTask);
+
+        // Act
+        await _logService.InitializeAsync();
+
+        // Assert
+        createdLogs.Should().HaveCount(53); // 50 generic + 3 specific logs
+        createdLogs.Select(l => l.Action)
+                   .Should().Contain(new[] { "Create", "Update", "Delete" }); // sanity check for specific logs
+
+        // Check descending order of timestamps for generic logs
+        var genericLogs = createdLogs.Take(50).OrderByDescending(l => l.Timestamp).ToList();
+        genericLogs.Should().BeInDescendingOrder(l => l.Timestamp);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenLogsAlreadyExist_ShouldNotSeedAgain()
+    {
+        // Arrange
+        var existingLogs = new List<UserActionLog>
+            {
+                new() { Id = 1, UserId = 1, Action = "Create" }
+            };
+        _dataContextMock.Setup(d => d.GetAllAsync<UserActionLog>())
+                        .ReturnsAsync(existingLogs);
+
+        // Act
+        await _logService.InitializeAsync();
+
+        // Assert
+        _dataContextMock.Verify(d => d.CreateAsync(It.IsAny<UserActionLog>()), Times.Never);
+    }
+
+    #endregion
 }

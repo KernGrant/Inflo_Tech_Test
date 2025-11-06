@@ -35,6 +35,11 @@
     </table>
 </div>
 
+<a asp-controller="Users" asp-action="List" class="btn btn-secondary">
+    Back to Users
+</a>
+
+
 <h3>Action History</h3>
 
 @if (ViewData["UserLogs"] is IEnumerable<UserActionLog> userLogs && userLogs.Any())
