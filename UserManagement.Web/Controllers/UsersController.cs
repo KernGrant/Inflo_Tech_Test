@@ -88,7 +88,7 @@ public class UsersController : Controller
         return View(model);
     }
 
-    [HttpPost]
+    [HttpPost("create")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(UserCreateViewModel model)
     {
