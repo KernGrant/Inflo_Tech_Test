@@ -17,6 +17,8 @@ The system demonstrates clean architecture, separation of concerns, and scalabil
  - Logs overview page persists page/filter when navigating back from an individual log.
  - Back navigation on user details page, consistent redirection after actions.
  - Log Details Handling: Shows log details, cuts off (in the overview page) if the section goes beyond 50 characters, and provides a generic message ("No additional information available") when details are missing.
+ - Deleted User Handling: When a user referenced by a log has been deleted, the system shows a Deleted User Summary, displaying historical logs instead of a 404 error.
+ - Logs now include a "View User Details" button, allowing easy navigation from a log entry to the corresponding user’s details or their Deleted User Summary.
 
 
 ### Optional / Future Enhancements
