@@ -11,7 +11,7 @@ public interface IUserService
     /// </summary>
     /// <param name="isActive"></param>
     /// <returns></returns>    
-    Task<IEnumerable<User>> GetAllAsync();
+    Task<IEnumerable<User>> GetAllUsersAsync();
     Task<User?> GetUserByIdAsync(int id);
     Task AddUserAsync (User user);
     Task UpdateUserAsync (User user);

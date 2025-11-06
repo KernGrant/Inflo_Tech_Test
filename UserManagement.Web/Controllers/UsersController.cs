@@ -25,7 +25,7 @@ public class UsersController : Controller
     [HttpGet("list")]
     public async Task<ViewResult> List(bool? isActive = null)
     {
-        var allUsers = await _userService.GetAllAsync();
+        var allUsers = await _userService.GetAllUsersAsync();
 
         var items = allUsers
             .Where(p => !isActive.HasValue || p.IsActive == isActive)
@@ -35,6 +35,7 @@ public class UsersController : Controller
                 Forename = p.Forename,
                 Surname = p.Surname,
                 Email = p.Email,
+                DateOfBirth = p.DateOfBirth,
                 IsActive = p.IsActive
             });
 

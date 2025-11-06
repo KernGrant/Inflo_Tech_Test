@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using UserManagement.Data;
-using UserManagement.Services.Implementations;
 using UserManagement.Services.Interfaces;
 using Westwind.AspNetCore.Markdown;
 
@@ -19,9 +18,17 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseInMemoryDatabase("UserManagement"));
 builder.Services.AddScoped<IDataContext, DataContext>();
 
-builder.Services.AddSingleton<ILogService, LogService>();
+
+builder.Services.AddScoped<ILogService, LogService>();
 
 var app = builder.Build();
+
+// Seed logs at startup
+using (var scope = app.Services.CreateScope())
+{
+    var logService = scope.ServiceProvider.GetRequiredService<ILogService>();
+    await logService.InitializeAsync();
+}
 
 app.UseMarkdown();
 

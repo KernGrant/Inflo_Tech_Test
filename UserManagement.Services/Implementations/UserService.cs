@@ -13,7 +13,7 @@ public class UserService : IUserService
 
     public UserService(IDataContext dataContext) => _dataAccess = dataContext;
 
-    public async Task<IEnumerable<User>> GetAllAsync()
+    public async Task<IEnumerable<User>> GetAllUsersAsync()
     {
         return await _dataAccess.GetAllAsync<User>();
     }

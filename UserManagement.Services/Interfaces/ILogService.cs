@@ -9,7 +9,8 @@ namespace UserManagement.Services.Interfaces
         Task<IEnumerable<UserActionLog>> GetAllLogsAsync();
         Task<IEnumerable<UserActionLog>> GetLogsForSpecificUserAsync(int userId);        
         Task<UserActionLog?> GetLogByIdAsync(int logId);
-        Task AddLogAsync(UserActionLog log);               
+        Task AddLogAsync(UserActionLog log);
+        Task InitializeAsync();
     }
 
 }
