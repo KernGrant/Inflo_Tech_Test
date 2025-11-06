@@ -1,3 +1,41 @@
+# User Management System – Tech Test Submission
+
+## Overview
+This project implements a user management system with full CRUD operations, user action logging, and comprehensive test coverage. 
+The system demonstrates clean architecture, separation of concerns, and scalability considerations, while being fully unit-testable.
+
+
+### Key Features Implemented
+- **User Management**: Create, Read, Update, Delete users with proper validation and navigation.
+- **Logging**: Logs user actions (Create/Update/Delete) with timestamps and details.
+- **Seeding**: Initial set of logs seeded automatically at startup.
+- Pagination & Filtering: Logs page handles large datasets gracefully.
+- **Tests**: Unit tests cover services, controllers, and DataContext operations.
+- **Architecture**: Clean separation of concerns and proper dependency injection.
+- **UX Enhancements**:
+ - Users can navigate to a specific page or filter by UserId.
+ - Logs overview page persists page/filter when navigating back from an individual log.
+ - Back navigation on user details page, consistent redirection after actions.
+ - Log Details Handling: Shows log details, cuts off (in the overview page) if the section goes beyond 50 characters, and provides a generic message ("No additional information available") when details are missing.
+
+
+### Optional / Future Enhancements
+- Extend filtering & pagination to User overview pages.
+- Implement search for Users and Logs (e.g., name, email, action details, date ranges).
+- Role-based permissions for actions on logs/users.
+- Centralized event logging service for platform-level auditing.
+- Background log processing for high-scale systems.
+- Integration with multiple storage backends (SQL Server, Azure Cosmos DB, etc.).
+- Advanced architectural patterns: CQRS, Event Sourcing, MediatR.
+
+### Notes
+- Logs seeded at startup: 50 generic + 3 specific actions.
+- CRUD operations are fully unit-tested.
+- Logging actions are verified through mock-based tests in `LogServiceTests` and `UserControllerTests`.
+- Clean architecture and testability were a priority.
+
+
+---------------------------------------------------------------------------------------------------------------------------
 # User Management Technical Exercise
 
 The exercise is an ASP.NET Core web application backed by Entity Framework Core, which faciliates management of some fictional users.
