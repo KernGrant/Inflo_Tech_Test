@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UserManagement.Services.Interfaces;
 
-namespace UserManagement.WebMS.Controllers
+namespace UserManagement.Web.Controllers.Logs
 {
     [Route("logs")]
     public class LogsController : Controller
@@ -46,11 +46,9 @@ namespace UserManagement.WebMS.Controllers
         }
 
         [HttpGet("details/{id:int}")]
-        public IActionResult Details(int id, int page = 1, int? userId = null)
+        public async Task<IActionResult> Details(int id, int page = 1, int? userId = null)
         {
-            var logs = _logService.GetAllLogsAsync();                                                                        
-
-            var log= logs.Result.FirstOrDefault(l => l.Id == id); 
+            var log = await _logService.GetLogByIdAsync(id);
 
             if (log == null)
             {

@@ -4,7 +4,7 @@
     ViewData["Title"] = "Logs";
     var currentPage = ViewData["CurrentPage"] as int? ?? 1; //defaults to 1 if null
     var totalPages = ViewData["TotalPages"] as int? ?? 1;
-    var filteredUserId = ViewData["FilteredUserId"] as int?;
+    var filteredUserId = ViewData["FilteredUserId"] as int?; // Can be null, may not be filtering
 }
 
 <h2>Logs</h2>

@@ -61,9 +61,9 @@ namespace UserManagement.Services.Implementations
             return Task.FromResult(_logs.Where(l => l.UserId == userId).OrderByDescending(l => l.Timestamp).AsEnumerable());            
         }
 
-        public UserActionLog? GetLogById(int logId)
+        public Task<UserActionLog?> GetLogByIdAsync(int logId)
         {
-            return _logs.FirstOrDefault(l => l.Id == logId);
+            return Task.FromResult(_logs.FirstOrDefault(l => l.Id == logId));
         }
 
         public Task AddLogAsync(UserActionLog log)

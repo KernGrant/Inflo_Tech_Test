@@ -7,8 +7,8 @@ namespace UserManagement.Services.Interfaces
     public interface ILogService
     {
         Task<IEnumerable<UserActionLog>> GetAllLogsAsync();
-        Task<IEnumerable<UserActionLog>> GetLogsForSpecificUserAsync(int userId);
-        UserActionLog? GetLogById(int logId);
+        Task<IEnumerable<UserActionLog>> GetLogsForSpecificUserAsync(int userId);        
+        Task<UserActionLog?> GetLogByIdAsync(int logId);
         Task AddLogAsync(UserActionLog log);               
     }
 
